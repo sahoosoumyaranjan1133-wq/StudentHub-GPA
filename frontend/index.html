@@ -1,0 +1,407 @@
+<!DOCTYPE html>
+<html lang="en">
+
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <meta name="description" content="StudentHub AI — your all-in-one student workspace." />
+        <title>StudentHub AI — Student Workspace</title>
+        <link rel="stylesheet" href="style.css" />
+        <style>
+            /* Auth Screen & First-Time User Enhancements */
+            .hidden {
+                display: none !important;
+            }
+
+            .auth-wrapper {
+                min-height: 100vh;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                padding: 24px;
+                background: radial-gradient(circle at top right, #ece8ff 0%, #f7f6fb 55%, #ffffff 100%);
+            }
+
+            .auth-card {
+                width: 100%;
+                max-width: 420px;
+                background: #f8f6f6;
+                border-radius: 20px;
+                padding: 32px 28px;
+                box-shadow: 0 20px 50px rgba(105, 89, 205, 0.12);
+                border: 1px solid rgba(129, 112, 233, 0.16);
+            }
+
+            .auth-brand {
+                display: flex;
+                align-items: center;
+                gap: 10px;
+                margin-bottom: 20px;
+            }
+
+            .auth-tabs {
+                display: grid;
+                grid-template-columns: 1fr 1fr;
+                background: #8170e9;
+                padding: 4px;
+                border-radius: 12px;
+                margin-bottom: 20px;
+            }
+
+            .auth-tab {
+                border: none;
+                background: transparent;
+                padding: 9px 12px;
+                border-radius: 9px;
+                font-weight: 600;
+                cursor: pointer;
+                color: #567178;
+                transition: all 0.2s ease;
+            }
+
+            .auth-tab.active {
+                background: #ffffff;
+                color: #26223b;
+                box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+            }
+
+            .auth-form label {
+                display: block;
+                font-size: 0.85rem;
+                font-weight: 600;
+                margin: 12px 0 6px;
+                color: #354c54;
+            }
+
+            .auth-form input {
+                width: 100%;
+                padding: 11px 13px;
+                border: 1px solid #dcd7f3;
+                border-radius: 10px;
+                font-size: 0.95rem;
+                outline: none;
+                box-sizing: border-box;
+            }
+
+            .auth-form input:focus {
+                border-color: #8170e9;
+                box-shadow: 0 0 0 3px rgba(129, 112, 233, 0.15);
+            }
+
+            .auth-error {
+                color: #ef110a;
+                font-size: 0.85rem;
+                margin-top: 10px;
+                min-height: 18px;
+            }
+
+            .stat-card.interactive {
+                cursor: pointer;
+                transition: transform 0.15s ease, box-shadow 0.99s ease;
+            }
+
+            .stat-card.interactive:hover {
+                transform: translateY(-2px);
+            }
+
+            .empty-state-box {
+                padding: 18px;
+                text-align: center;
+                border: 1px dashed #6455b3;
+                border-radius: 12px;
+                color: #6c668a;
+                font-size: 0.9rem;
+            }
+        </style>
+    </head>
+
+    <body>
+
+        <!-- 1. AUTHENTICATION SCREEN (LOGIN / SIGN UP) -->
+        <section class="auth-wrapper" id="authScreen">
+            <div class="auth-card">
+                <div class="auth-brand">
+                    <span class="brand-mark">S<span>✦</span></span>
+                    <div>
+                        <strong style="display:block; font-size:1.1rem;">StudentHub</strong>
+                        <small style="color:#777099; font-size:0.75rem;">PERSONAL STUDENT WORKSPACE</small>
+                    </div>
+                </div>
+
+                <div class="auth-tabs">
+                    <button type="button" class="auth-tab active" id="tabSignup">Create Account</button>
+                    <button type="button" class="auth-tab" id="tabLogin">Log In</button>
+                </div>
+
+                <!-- Create Account Form -->
+                <form class="auth-form" id="signupForm">
+                    <label for="signupName">Full Name</label>
+                    <input id="signupName" type="text" required placeholder="e.g. Your Full Name" />
+
+                    <label for="signupEmail">Email Address</label>
+                    <input id="signupEmail" type="email" required placeholder="you@example.com" />
+
+                    <label for="signupPassword">Password</label>
+                    <input id="signupPassword" type="password" required minlength="4"
+                        placeholder="At least 4 characters" />
+
+                    <label for="signupProgram">Course / Program</label>
+                    <input id="signupProgram" type="text" required placeholder="e.g. B.Tech CSE, Diploma, BCA" />
+
+                    <div class="auth-error" id="signupError"></div>
+                    <button type="submit" class="modal-submit" style="width:100%; margin-top:10px;">Create Account &amp;
+                        Enter →</button>
+                </form>
+
+                <!-- Login Form -->
+                <form class="auth-form hidden" id="loginForm">
+                    <label for="loginEmail">Email Address</label>
+                    <input id="loginEmail" type="email" required placeholder="you@example.com" />
+
+                    <label for="loginPassword">Password</label>
+                    <input id="loginPassword" type="password" required placeholder="Enter your password" />
+
+                    <div class="auth-error" id="loginError"></div>
+                    <button type="submit" class="modal-submit" style="width:100%; margin-top:10px;">Log In to Workspace
+                        →</button>
+                </form>
+            </div>
+        </section>
+
+        <!-- 2. MAIN WORKSPACE INTERFACE -->
+        <div class="app-shell hidden" id="appShell">
+            <aside class="sidebar" id="sidebar">
+                <a class="brand" href="#" aria-label="StudentHub Home" data-view="overview">
+                    <span class="brand-mark">S<span>✦</span></span>
+                    <span><strong>StudentHub</strong><small>STUDENT SPACE</small></span>
+                </a>
+                <div class="nav-label">WORKSPACE</div>
+                <nav class="nav">
+                    <button class="nav-item active" data-view="overview"><span>▦</span> Overview</button>
+                    <button class="nav-item" data-view="study"><span>✧</span> AI Study Assistant <i
+                            class="new-tag">AI</i></button>
+                    <button class="nav-item" data-view="notes"><span>▤</span> Notes Library</button>
+                    <button class="nav-item" data-view="planner"><span>◷</span> Study Planner</button>
+                    <button class="nav-item" data-view="attendance"><span>▣</span> Attendance</button>
+                    <button class="nav-item" data-view="assignments"><span>☑</span> Assignments</button>
+                    <div class="nav-label nav-label-gap">CAREER</div>
+                    <button class="nav-item" data-view="placement"><span>↗</span> Placement Prep</button>
+                    <button class="nav-item" data-view="resume"><span>▧</span> Resume Builder</button>
+                    <button class="nav-item" data-view="community"><span>◎</span> Community</button>
+                </nav>
+                <div class="sidebar-bottom">
+                    <div class="upgrade-card">
+                        <div class="sparkle">✦</div><strong>Make learning count.</strong>
+                        <p>Your next big opportunity starts with one small step.</p>
+                        <button data-view="placement">Explore career tools <span>→</span></button>
+                    </div>
+                    <button class="profile-mini" id="profileButton">
+                        <div class="avatar" id="sidebarAvatar">SH</div>
+                        <span>
+                            <strong id="sidebarUserName">Student</strong>
+                            <small id="sidebarUserProgram">Student Workspace</small>
+                        </span>
+                        <span class="dots">•••</span>
+                    </button>
+                </div>
+            </aside>
+
+            <main class="main">
+                <header class="topbar">
+                    <button class="mobile-menu" id="mobileMenu" aria-label="Open menu">☰</button>
+                    <div class="breadcrumb">Workspace <span>/</span> <strong id="breadcrumbTitle">Overview</strong>
+                    </div>
+                    <div class="top-actions">
+                        <label class="global-search"><span>⌕</span><input id="globalSearch"
+                                placeholder="Search notes, tasks, deadlines..." /><kbd>⌘ K</kbd></label>
+                        <button class="icon-button" id="notificationButton" aria-label="Notifications">♧<i></i></button>
+                        <div class="avatar top-avatar" id="topAvatar" title="Account & Profile" style="cursor:pointer;">
+                            S</div>
+                    </div>
+                </header>
+
+                <section class="content">
+                    <div class="welcome-row">
+                        <div>
+                            <div class="eyebrow"><span class="live-dot"></span> YOUR PERSONAL STUDENT SPACE</div>
+                            <h1 id="pageTitle">Welcome! <span class="wave">✦</span></h1>
+                            <p class="subtitle" id="pageSubtitle">Start by adding your subjects, tasks, or study goals
+                                for today.</p>
+                        </div>
+                        <button class="primary-button" id="addTaskButtonTop"><span>＋</span> Plan my day</button>
+                    </div>
+
+                    <div class="hero-card">
+                        <div class="hero-copy">
+                            <div class="hero-pill"><span>✦</span> YOUR AI LEARNING COMPANION</div>
+                            <h2>Make today a<br /><em>step forward.</em></h2>
+                            <p>Learn smarter, stay organized, and build the future you want — all in one place.</p>
+                            <button class="hero-button" data-view="study">Ask your AI assistant <span>↗</span></button>
+                        </div>
+                        <div class="hero-art" aria-hidden="true">
+                            <div class="orbit orbit-one"></div>
+                            <div class="orbit orbit-two"></div>
+                            <div class="floating-card card-note"><span class="float-icon purple">▤</span><span><b>Study
+                                        notes</b><small id="heroNoteCount">0 saved notes</small></span><i>✓</i></div>
+                            <div class="floating-card card-score"><span class="float-icon yellow">✧</span><span><b>Keep
+                                        going!</b><small id="heroTaskStatus">Ready to start</small></span></div>
+                            <div class="book-stack">
+                                <div class="book book-back"></div>
+                                <div class="book book-mid"></div>
+                                <div class="book book-front"><span>✦</span></div>
+                                <div class="book-page"></div>
+                            </div>
+                            <div class="hero-spark spark-a">✦</div>
+                            <div class="hero-spark spark-b">✧</div>
+                            <div class="hero-spark spark-c">·</div>
+                        </div>
+                    </div>
+
+                    <div class="section-heading">
+                        <div>
+                            <h2>Your overview</h2>
+                            <p>Click any card below to update or log your progress.</p>
+                        </div>
+                        <button class="text-button" id="customizeButton">Customize view ↗</button>
+                    </div>
+
+                    <!-- Interactive Live Stats Grid -->
+                    <div class="stats-grid">
+                        <article class="stat-card interactive" id="cardAttendance" data-view="attendance">
+                            <div class="stat-top"><span>Attendance</span><span class="stat-icon mint">▣</span></div>
+                            <div class="stat-value" id="statAttendanceVal">0<span>%</span></div>
+                            <div class="stat-foot"><span class="status-good" id="statAttendanceSub">Click to log
+                                    classes</span></div>
+                            <div class="mini-progress"><span id="statAttendanceBar" style="width:0%"></span></div>
+                        </article>
+
+                        <article class="stat-card interactive" id="cardStudyTime">
+                            <div class="stat-top"><span>Study time</span><span class="stat-icon lavender">◷</span></div>
+                            <div class="stat-value" id="statStudyVal">0<span class="unit"> hrs</span></div>
+                            <div class="stat-foot"><span class="status-good">+ Click to log study time</span></div>
+                            <div class="mini-progress lavender-bar"><span id="statStudyBar" style="width:0%"></span>
+                            </div>
+                        </article>
+
+                        <article class="stat-card interactive" id="cardTasks" data-view="planner">
+                            <div class="stat-top"><span>Tasks completed</span><span class="stat-icon peach">☑</span>
+                            </div>
+                            <div class="stat-value" id="statTasksVal">0<span class="muted-value">/0</span></div>
+                            <div class="stat-foot"><span class="status-good" id="statTasksSub">0%</span>
+                                <span>completion rate</span>
+                            </div>
+                            <div class="mini-progress peach-bar"><span id="statTasksBar" style="width:0%"></span></div>
+                        </article>
+
+                        <article class="stat-card interactive" id="cardQuiz">
+                            <div class="stat-top"><span>Quiz average</span><span class="stat-icon blue">✧</span></div>
+                            <div class="stat-value" id="statQuizVal">0<span>%</span></div>
+                            <div class="stat-foot"><span class="status-good" id="statQuizSub">Click to take a quick
+                                    quiz</span></div>
+                            <div class="mini-progress blue-bar"><span id="statQuizBar" style="width:0%"></span></div>
+                        </article>
+                    </div>
+
+                    <div class="dashboard-grid">
+                        <section class="panel focus-panel">
+                            <div class="panel-heading">
+                                <div>
+                                    <h3>Today's focus</h3>
+                                    <p>Small steps, meaningful progress.</p>
+                                </div>
+                                <button class="more-button" id="clearCompletedBtn" title="Clear completed tasks">Clear
+                                    done</button>
+                            </div>
+                            <div class="focus-progress">
+                                <div class="progress-ring">
+                                    <div><strong id="ringCount">0/0</strong><small>tasks</small></div>
+                                </div>
+                                <div>
+                                    <strong id="focusHeadline">Let's plan your day!</strong>
+                                    <p id="focusSubtext">Add your first task below to start tracking today's focus.</p>
+                                    <button class="inline-link" data-view="planner">Add task →</button>
+                                </div>
+                            </div>
+                            <div class="task-list" id="taskList"></div>
+                            <button class="add-task" id="addTaskButton">＋ Add a task</button>
+                        </section>
+
+                        <section class="panel ai-panel">
+                            <div class="panel-heading">
+                                <div>
+                                    <h3>Ask StudentHub AI</h3>
+                                    <p>Your study buddy, available anytime.</p>
+                                </div>
+                                <span class="ai-badge">✦ INTERACTIVE</span>
+                            </div>
+                            <div class="ai-welcome">
+                                <div class="ai-avatar">✦</div>
+                                <div>
+                                    <strong id="aiGreeting">Hey there! What are we learning today?</strong>
+                                    <p>Type any topic below to generate an instant study breakdown, active recall
+                                        prompts, or add it to your notes.</p>
+                                </div>
+                            </div>
+                            <div class="suggestions">
+                                <button class="suggestion" data-prompt="Object-Oriented Programming">Explain OOP
+                                    concepts <span>↗</span></button>
+                                <button class="suggestion" data-prompt="Database Normalization">Database Normalization
+                                    <span>↗</span></button>
+                                <button class="suggestion" data-prompt="Time Management for Exams">Exam Study Strategy
+                                    <span>↗</span></button>
+                            </div>
+                            <form class="chat-input" id="chatForm">
+                                <input id="chatInput" placeholder="Enter a topic or question..." autocomplete="off" />
+                                <button type="submit" aria-label="Send message">↑</button>
+                            </form>
+                        </section>
+                    </div>
+
+                    <div class="bottom-grid">
+                        <section class="panel resources-panel">
+                            <div class="panel-heading">
+                                <div>
+                                    <h3>Continue learning</h3>
+                                    <p>Your saved notes &amp; study materials.</p>
+                                </div>
+                                <button class="inline-link" data-view="notes">Manage notes →</button>
+                            </div>
+                            <div class="resource-list" id="resourceList"></div>
+                        </section>
+
+                        <section class="panel deadline-panel">
+                            <div class="panel-heading">
+                                <div>
+                                    <h3>Coming up</h3>
+                                    <p>Your upcoming assignment deadlines.</p>
+                                </div>
+                                <button class="inline-link" data-view="assignments">Add deadline →</button>
+                            </div>
+                            <div id="deadlineList"></div>
+                        </section>
+                    </div>
+
+                    <footer><span>✦ StudentHub AI</span><span>Built for your next step. <b>Keep growing.</b></span>
+                    </footer>
+                </section>
+            </main>
+        </div>
+
+        <div class="toast" id="toast" role="status"></div>
+        <dialog id="modal">
+            <div class="modal-head">
+                <h3 id="modalTitle">Quick action</h3>
+                <button id="closeModal" aria-label="Close">×</button>
+            </div>
+            <div id="modalBody"></div>
+        </dialog>
+        <script src="script.js"></script>
+        <pre id="dashboard-data">Loading dashboard...</pre>
+
+        <script src="api.js"></script>
+        <script>
+            loadDashboard();
+        </script>
+    </body>
+
+</html>

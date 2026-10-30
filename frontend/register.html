@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>StudentHub | Student Registration</title>
+        <link rel="stylesheet" href="register.css">
+    </head>
+
+    <body>
+        <main class="register-container">
+            <header class="register-header">
+                <div class="logo">🎓</div>
+                <h1>StudentHub</h1>
+                <p>Create your student account</p>
+            </header>
+
+            <section class="register-card">
+                <h2>Student Registration</h2>
+                <p class="description">
+                    Enter your details to join StudentHub.
+                </p>
+
+                <form id="registerForm">
+                    <label for="fullName">Full name</label>
+                    <input type="text" id="fullName" name="fullName" placeholder="Enter your full name"
+                        autocomplete="name" required>
+
+                    <label for="email">College email</label>
+                    <input type="email" id="email" name="email" placeholder="Enter your email address"
+                        autocomplete="email" required>
+                    <label for="password">Create password</label>
+                    <input type="password" id="password" name="password" placeholder="At least 8 characters"
+                        autocomplete="new-password" minlength="8" required>
+
+                    <label for="confirmPassword">Confirm password</label>
+                    <input type="password" id="confirmPassword" name="confirmPassword"
+                        placeholder="Re-enter your password" autocomplete="new-password" minlength="8" required>
+
+                    <label for="department">Department</label>
+                    <input type="text" id="department" name="department" placeholder="e.g. Computer Engineering and IoT"
+                        required>
+
+                    <label for="semester">Current semester</label>
+                    <select id="semester" name="semester" required>
+                        <option value="">Select semester</option>
+                        <option value="1">Semester 1</option>
+                        <option value="2">Semester 2</option>
+                        <option value="3">Semester 3</option>
+                        <option value="4">Semester 4</option>
+                        <option value="5">Semester 5</option>
+                        <option value="6">Semester 6</option>
+                    </select>
+
+                    <button type="submit" id="registerBtn">
+                        Create Student Account
+                    </button>
+
+                    <p id="formMessage" role="status" aria-live="polite"></p>
+                </form>
+
+                <p class="approval-note">
+                    Your account will remain inactive until an administrator activates it.
+                </p>
+
+                <a class="back-link" href="index.html">← Back to StudentHub AI</a>
+            </section>
+
+            <footer>
+                StudentHub · Learn, collaborate, grow.
+            </footer>
+        </main>
+
+        <script src="register.js"></script>
+    </body>
+
+</html>

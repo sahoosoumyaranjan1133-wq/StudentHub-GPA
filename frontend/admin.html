@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en">
+
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>StudentHub AI | Admin Panel</title>
+        <link rel="stylesheet" href="admin.css">
+    </head>
+
+    <body>
+        <aside class="sidebar">
+            <h2>🎓 StudentHub <span>ADMIN</span></h2>
+            <p class="muted">Platform management</p>
+
+            <nav>
+                <a class="active" href="#overview">Overview</a>
+                <a href="#students">Students</a>
+                <a href="#notes">Notes moderation</a>
+                <a href="#announcements">Announcements</a>
+                <a href="#activity">Activity logs</a>
+            </nav>
+
+            <button id="logoutBtn" class="secondary">Logout</button>
+        </aside>
+
+        <main>
+            <header>
+                <div>
+                    <p class="muted">ADMINISTRATION</p>
+                    <h1>Admin Dashboard</h1>
+                    <p>Manage your StudentHub AI platform.</p>
+                </div>
+                <button id="refreshBtn">↻ Refresh data</button>
+            </header>
+
+            <section id="loginPanel" class="panel">
+                <h2>Admin sign in</h2>
+                <p>Use your configured backend admin credentials.</p>
+                <form id="loginForm">
+                    <label>Username
+                        <input id="username" value="admin" autocomplete="username" required>
+                    </label>
+                    <label>Password
+                        <input id="password" type="password" autocomplete="current-password" required>
+                    </label>
+                    <button type="submit">Connect to backend</button>
+                </form>
+                <p id="loginMessage" role="status"></p>
+            </section>
+
+            <section id="overview">
+                <h2>Platform overview</h2>
+                <div class="stats">
+                    <article class="stat">
+                        <p>Students</p><strong id="totalStudents">—</strong>
+                    </article>
+                    <article class="stat">
+                        <p>Faculty</p><strong id="totalFaculty">—</strong>
+                    </article>
+                    <article class="stat">
+                        <p>Announcements</p><strong id="totalAnnouncements">—</strong>
+                    </article>
+                    <article class="stat">
+                        <p>Notes</p><strong id="totalNotes">—</strong>
+                    </article>
+                    <article class="stat">
+                        <p>Pending notes</p><strong id="pendingNotes">—</strong>
+                    </article>
+                    <article class="stat">
+                        <p>Active users</p><strong id="activeUsers">—</strong>
+                    </article>
+                </div>
+                <p id="status" role="status">Sign in to load live data.</p>
+            </section>
+
+            <section id="students" class="panel">
+                <h2>Student management</h2>
+                <p>View student records and manage account status.</p>
+                <button data-load="students">Load students</button>
+                <div id="studentsOutput" class="output">Sign in first.</div>
+            </section>
+
+            <section id="notes" class="panel">
+                <h2>Notes moderation</h2>
+                <button data-load="notes">Load notes</button>
+                <div id="notesOutput" class="output">Sign in first.</div>
+            </section>
+
+            <section id="announcements" class="panel">
+                <h2>Announcements</h2>
+                <form id="announcementForm">
+                    <label>Title
+                        <input id="announcementTitle" required>
+                    </label>
+                    <label>Message
+                        <textarea id="announcementContent" rows="4" required></textarea>
+                    </label>
+                    <button type="submit">Publish announcement</button>
+                </form>
+                <button data-load="announcements">Load announcements</button>
+                <div id="announcementsOutput" class="output">Sign in first.</div>
+            </section>
+
+            <section id="activity" class="panel">
+                <h2>Activity logs</h2>
+                <button data-load="audit-logs">Load activity logs</button>
+                <div id="audit-logsOutput" class="output">Sign in first.</div>
+            </section>
+
+            <footer>StudentHub AI · Administration</footer>
+        </main>
+
+        <script src="admin.js"></script>
+    </body>
+
+</html>

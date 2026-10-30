@@ -1,0 +1,46 @@
+const loginForm = document.getElementById("loginForm");
+const message = document.getElementById("message");
+const loginButton = document.getElementById("loginButton");
+
+loginForm.addEventListener("submit", async (event) => {
+    event.preventDefault();
+
+    message.textContent = "";
+    loginButton.disabled = true;
+    loginButton.textContent = "Checking...";
+
+    const email = document.getElementById("email").value.trim();
+    const password = document.getElementById("password").value;
+
+    try {
+        const response = await fetch(
+            "http://localhost:8080/api/students/login",
+            {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({ email, password })
+            }
+        );
+
+        const data = await response.json();
+
+        if (response.ok) {
+            message.textContent =
+                "Credentials verified! Dashboard setup is the next step.";
+            message.style.color = "green";
+        } else {
+            message.textContent =
+                data.message || "Login failed. Check your credentials.";
+            message.style.color = "red";
+        }
+    } catch (error) {
+        message.textContent =
+            "Cannot connect to the server. Check that the backend is running.";
+        message.style.color = "red";
+    } finally {
+        loginButton.disabled = false;
+        loginButton.textContent = "Log In";
+    }
+});
