@@ -90,18 +90,34 @@ AuthenticationManager adminAuthenticationManager(
             throws Exception {
 
         http
-            .authenticationManager(adminAuthenticationManager)
-            .cors(Customizer.withDefaults())
-            .csrf(csrf -> csrf.disable())
+            // .authenticationManager(adminAuthenticationManager)
+            // .cors(Customizer.withDefaults())
+            // .csrf(csrf -> csrf.disable())
+            // .authorizeHttpRequests(auth -> auth
+            //     .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
+            //     .requestMatchers(
+            //         HttpMethod.POST,
+            //         "/api/students/register",
+            //         "/api/students/login"
+            //     ).permitAll()
+            //     .anyRequest().hasRole("ADMIN")
+            // )
             .authorizeHttpRequests(auth -> auth
-                .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
-                .requestMatchers(
-                    HttpMethod.POST,
-                    "/api/students/register",
-                    "/api/students/login"
-                ).permitAll()
-                .anyRequest().hasRole("ADMIN")
-            )
+    .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
+
+    // Public health check
+    .requestMatchers("/actuator/health").permitAll()
+
+    // Public student registration and login
+    .requestMatchers(
+        HttpMethod.POST,
+        "/api/students/register",
+        "/api/students/login"
+    ).permitAll()
+
+    // All remaining endpoints require ADMIN
+    .anyRequest().hasRole("ADMIN")
+)
             .httpBasic(Customizer.withDefaults());
 
         return http.build();
