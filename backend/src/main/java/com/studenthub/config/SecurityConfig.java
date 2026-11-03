@@ -217,3 +217,5 @@ CorsConfigurationSource corsConfigurationSource() {
 
     return source;
 }
+}
+
