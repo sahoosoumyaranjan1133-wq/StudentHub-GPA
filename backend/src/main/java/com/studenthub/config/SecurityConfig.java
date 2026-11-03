@@ -82,46 +82,80 @@ AuthenticationManager adminAuthenticationManager(
 }
 
     // Security rules for HTTP requests
-    @Bean
-    SecurityFilterChain securityFilterChain(
-            HttpSecurity http,
-            @Qualifier("adminAuthenticationManager")
-            AuthenticationManager adminAuthenticationManager)
-            throws Exception {
+//     @Bean
+//     SecurityFilterChain securityFilterChain(
+//             HttpSecurity http,
+//             @Qualifier("adminAuthenticationManager")
+//             AuthenticationManager adminAuthenticationManager)
+//             throws Exception {
 
-        http
-            // .authenticationManager(adminAuthenticationManager)
-            // .cors(Customizer.withDefaults())
-            // .csrf(csrf -> csrf.disable())
-            // .authorizeHttpRequests(auth -> auth
-            //     .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
-            //     .requestMatchers(
-            //         HttpMethod.POST,
-            //         "/api/students/register",
-            //         "/api/students/login"
-            //     ).permitAll()
-            //     .anyRequest().hasRole("ADMIN")
-            // )
-            .authorizeHttpRequests(auth -> auth
-    .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
+//         http
+//             // .authenticationManager(adminAuthenticationManager)
+//             // .cors(Customizer.withDefaults())
+//             // .csrf(csrf -> csrf.disable())
+//             // .authorizeHttpRequests(auth -> auth
+//             //     .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
+//             //     .requestMatchers(
+//             //         HttpMethod.POST,
+//             //         "/api/students/register",
+//             //         "/api/students/login"
+//             //     ).permitAll()
+//             //     .anyRequest().hasRole("ADMIN")
+//             // )
+//             .authorizeHttpRequests(auth -> auth
+//     .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
 
-    // Public health check
-    .requestMatchers("/actuator/health").permitAll()
+//     // Public health check
+//     .requestMatchers("/actuator/health").permitAll()
 
-    // Public student registration and login
-    .requestMatchers(
-        HttpMethod.POST,
-        "/api/students/register",
-        "/api/students/login"
-    ).permitAll()
+//     // Public student registration and login
+//     .requestMatchers(
+//         HttpMethod.POST,
+//         "/api/students/register",
+//         "/api/students/login"
+//     ).permitAll()
 
-    // All remaining endpoints require ADMIN
-    .anyRequest().hasRole("ADMIN")
-)
-            .httpBasic(Customizer.withDefaults());
+//     // All remaining endpoints require ADMIN
+//     .anyRequest().hasRole("ADMIN")
+// )
+//             .httpBasic(Customizer.withDefaults());
 
-        return http.build();
-    }
+//         return http.build();
+//     }
+@Bean
+SecurityFilterChain securityFilterChain(
+        HttpSecurity http,
+        @Qualifier("adminAuthenticationManager")
+        AuthenticationManager adminAuthenticationManager)
+        throws Exception {
+
+    http
+        .cors(Customizer.withDefaults())
+
+        // Disable CSRF for this REST API
+        .csrf(csrf -> csrf.disable())
+
+        .authorizeHttpRequests(auth -> auth
+
+            .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
+
+            .requestMatchers("/actuator/health").permitAll()
+
+            // Public student registration and login
+            .requestMatchers(
+                HttpMethod.POST,
+                "/api/students/register",
+                "/api/students/login"
+            ).permitAll()
+
+            // Other endpoints require ADMIN
+            .anyRequest().hasRole("ADMIN")
+        )
+
+        .httpBasic(Customizer.withDefaults());
+
+    return http.build();
+}
 
     // Student authentication
     // @Bean("studentAuthenticationManager")
@@ -150,31 +184,32 @@ AuthenticationManager studentAuthenticationManager(
 }
 
     // CORS configuration for the frontend
-    @Bean
-    CorsConfigurationSource corsConfigurationSource() {
+// @Bean
+CorsConfigurationSource corsConfigurationSource() {
 
-        CorsConfiguration config = new CorsConfiguration();
+    CorsConfiguration config = new CorsConfiguration();
 
-        config.setAllowedOrigins(List.of(
-            allowedOrigin,
-            "http://localhost:5500",
-            "http://127.0.0.1:5500"
-        ));
+    config.setAllowedOriginPatterns(List.of(
+        "https://studenthub-gpa.pages.dev",
+        "https://*.studenthub-gpa.pages.dev",
+        "http://localhost:5500",
+        "http://127.0.0.1:5500"
+    ));
 
-        config.setAllowedMethods(List.of(
-            "GET", "POST", "PUT", "PATCH",
-            "DELETE", "OPTIONS"
-        ));
+    config.setAllowedMethods(List.of(
+        "GET", "POST", "PUT", "PATCH",
+        "DELETE", "OPTIONS"
+    ));
 
-        config.setAllowedHeaders(List.of(
-            "Authorization", "Content-Type"
-        ));
+    config.setAllowedHeaders(List.of(
+        "Authorization",
+        "Content-Type"
+    ));
 
-        UrlBasedCorsConfigurationSource source =
-                new UrlBasedCorsConfigurationSource();
+    UrlBasedCorsConfigurationSource source =
+            new UrlBasedCorsConfigurationSource();
 
-        source.registerCorsConfiguration("/**", config);
+    source.registerCorsConfiguration("/**", config);
 
-        return source;
-    }
+    return source;
 }

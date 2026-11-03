@@ -1,4 +1,4 @@
-const API_URL = "http://localhost:8080/api/students/register";
+const API_URL = "https://studenthub-backend-4wyn.onrender.com/api/students/register";
 
 const form = document.getElementById("registerForm");
 const message = document.getElementById("formMessage");
