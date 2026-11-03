@@ -1,47 +1,51 @@
-const API_BASE_URL = "https://studenthub-backend-4wyn.onrender.com";
+const API_BASE_URL =
+    "https://studenthub-backend-4wyn.onrender.com";
 
-async function apiRequest(endpoint, options = {}) {
-    const username = "admin";
-    const password = window.prompt("Enter your StudentHub admin password:");
-
-    if (password === null) {
-        throw new Error("Login cancelled.");
-    }
-
-    const credentials = btoa(`${username}:${password}`);
-
+// General public/student API requests.
+// No administrator credentials are requested.
+async function studentApiRequest(endpoint, options = {}) {
     const response = await fetch(`${API_BASE_URL}${endpoint}`, {
         ...options,
         headers: {
-            ...options.headers,
-            "Authorization": `Basic ${credentials}`,
-            "Content-Type": "application/json"
+            "Content-Type": "application/json",
+            ...options.headers
         }
     });
 
-    if (response.status === 401) {
-        throw new Error("Invalid username or password.");
-    }
+    const text = await response.text();
+    const data = text ? JSON.parse(text) : null;
 
     if (!response.ok) {
-        throw new Error(`API error: ${response.status}`);
+        throw new Error(
+            data?.message || `API error: ${response.status}`
+        );
     }
 
-    return response.json();
+    return data;
 }
 
-async function loadDashboard() {
-    try {
-        const data = await apiRequest("/dashboard");
-        console.log("Dashboard data:", data);
+// Admin API requests.
+// Call this function only from the admin dashboard.
+async function adminApiRequest(endpoint, username, password, options = {}) {
+    const credentials = btoa(`${username}:${password}`);
 
-        // Display the response on your page.
-        const output = document.getElementById("dashboard-data");
-        if (output) {
-            output.textContent = JSON.stringify(data, null, 2);
+    const response = await fetch(`${API_BASE_URL}/api/admin${endpoint}`, {
+        ...options,
+        headers: {
+            "Content-Type": "application/json",
+            ...options.headers,
+            "Authorization": `Basic ${credentials}`
         }
-    } catch (error) {
-        console.error(error);
-        alert(error.message);
+    });
+
+    const text = await response.text();
+    const data = text ? JSON.parse(text) : null;
+
+    if (!response.ok) {
+        throw new Error(
+            data?.message || `Admin API error: ${response.status}`
+        );
     }
+
+    return data;
 }
