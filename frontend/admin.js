@@ -1,4 +1,4 @@
-const API_BASE = "http://localhost:8080/api/admin";
+const API_BASE = "https://studenthub-backend-4wyn.onrender.com/api/admin";
 
 let authHeader = null;
 
@@ -139,16 +139,16 @@ function renderStudents(students) {
             const card = document.createElement("article");
             card.className = "stat";
 
-            const name = document.createElement("h3");
+            // const name = document.createElement("h3");
             name.textContent =
-                student.fullName ?? student.fullName ?? `Student #${student.studentId}`;
+                student.fullName ?? `Student #${student.studentId}`;
 
             const details = document.createElement("p");
             details.textContent =
                 `Email: ${student.email ?? "Not provided"}`;
 
             const status = document.createElement("p");
-            status.textContent = `Status: ${student.status ?? "Unknown"}`;
+            status.textContent = `Status: ${student.accountStatus ?? "Unknown"}`;
 
             card.append(name, details, status);
             if (student.studentId != null) {

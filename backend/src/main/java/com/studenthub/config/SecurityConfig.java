@@ -129,8 +129,12 @@ SecurityFilterChain securityFilterChain(
         AuthenticationManager adminAuthenticationManager)
         throws Exception {
 
+    // http
+    //     .cors(Customizer.withDefaults())
     http
-        .cors(Customizer.withDefaults())
+    .authenticationManager(adminAuthenticationManager)
+
+    .cors(Customizer.withDefaults())
 
         // Disable CSRF for this REST API
         .csrf(csrf -> csrf.disable())

@@ -62,12 +62,12 @@ public class StudentController {
 
         // Public registration cannot assign privileged roles.
         student.setRole(Student.Role.STUDENT);
-        student.setAccountStatus(Student.AccountStatus.INACTIVE);
+        student.setAccountStatus(Student.AccountStatus.ACTIVE);
 
         Student saved = studentRepository.save(student);
 
         return Map.of(
-                "message", "Registration submitted successfully. Awaiting admin activation.",
+                "message", "Registration successfully! You can now log in.",
                 "studentId", saved.getStudentId(),
                 "fullName", saved.getFullName(),
                 "email", saved.getEmail(),
