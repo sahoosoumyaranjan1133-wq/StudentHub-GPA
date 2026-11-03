@@ -129,14 +129,9 @@ SecurityFilterChain securityFilterChain(
         AuthenticationManager adminAuthenticationManager)
         throws Exception {
 
-    // http
-    //     .cors(Customizer.withDefaults())
     http
-    .authenticationManager(adminAuthenticationManager)
-
-    .cors(Customizer.withDefaults())
-
-        // Disable CSRF for this REST API
+        .authenticationManager(adminAuthenticationManager)
+        .cors(Customizer.withDefaults())
         .csrf(csrf -> csrf.disable())
 
         .authorizeHttpRequests(auth -> auth
@@ -152,8 +147,11 @@ SecurityFilterChain securityFilterChain(
                 "/api/students/login"
             ).permitAll()
 
-            // Other endpoints require ADMIN
-            .anyRequest().hasRole("ADMIN")
+            // Only admin APIs require ADMIN credentials
+            .requestMatchers("/api/admin/**").hasRole("ADMIN")
+
+            // Other endpoints are not protected by this filter chain
+            .anyRequest().permitAll()
         )
 
         .httpBasic(Customizer.withDefaults());
@@ -188,7 +186,7 @@ AuthenticationManager studentAuthenticationManager(
 }
 
     // CORS configuration for the frontend
-// @Bean
+@Bean
 CorsConfigurationSource corsConfigurationSource() {
 
     CorsConfiguration config = new CorsConfiguration();
