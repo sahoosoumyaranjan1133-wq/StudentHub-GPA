@@ -1,4 +1,4 @@
-const API_BASE_URL = "http://localhost:8080/api/admin";
+const API_BASE_URL = "https://studenthub-backend-4wyn.onrender.com";
 
 async function apiRequest(endpoint, options = {}) {
     const username = "admin";

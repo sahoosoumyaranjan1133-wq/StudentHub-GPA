@@ -14,7 +14,7 @@ loginForm.addEventListener("submit", async (event) => {
 
     try {
         const response = await fetch(
-            "http://localhost:8080/api/students/login",
+            "https://studenthub-backend-4wyn.onrender.com",
             {
                 method: "POST",
                 headers: {
