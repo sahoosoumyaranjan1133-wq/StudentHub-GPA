@@ -73,10 +73,10 @@ AuthenticationManager adminAuthenticationManager(
             new InMemoryUserDetailsManager(admin);
 
     DaoAuthenticationProvider provider =
-            new DaoAuthenticationProvider(
-                    NoOpPasswordEncoder.getInstance());
+            new DaoAuthenticationProvider();
 
     provider.setUserDetailsService(adminUserDetailsService);
+    provider.setPasswordEncoder(NoOpPasswordEncoder.getInstance());
 
     return new ProviderManager(provider);
 }

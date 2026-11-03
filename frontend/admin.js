@@ -54,22 +54,25 @@ function showJson(elementId, data) {
 function setCount(id, value) {
     $(id).textContent = value ?? 0;
 }
+function updateDashboard(data) {
+    setCount("totalStudents", data.totalStudents);
+    setCount("totalFaculty", data.totalFaculty);
+    setCount("totalAnnouncements", data.totalAnnouncements);
+    setCount("totalNotes", data.totalNotes);
+    setCount("pendingNotes", data.pendingNotes);
+    setCount("activeUsers", data.activeUsers);
+}
 
 async function loadDashboard() {
     try {
         setStatus("Loading dashboard...");
         const data = await apiRequest("/dashboard");
-
-        setCount("totalStudents", data.totalStudents);
-        setCount("totalFaculty", data.totalFaculty);
-        setCount("totalAnnouncements", data.totalAnnouncements);
-        setCount("totalNotes", data.totalNotes);
-        setCount("pendingNotes", data.pendingNotes);
-        setCount("activeUsers", data.activeUsers);
-
+        updateDashboard(data);
         setStatus("Dashboard data loaded successfully.");
+        return true;
     } catch (error) {
         setStatus(error.message);
+        return false;
     }
 }
 async function loadSection(section) {
@@ -272,34 +275,38 @@ function renderStudents(students) {
 //         output.textContent = error.message;
 //     }
 // }
-
 $("loginForm").addEventListener("submit", async (event) => {
     event.preventDefault();
 
     const username = $("username").value.trim();
     const password = $("password").value;
 
+    if (!username || !password) {
+        $("loginMessage").textContent =
+            "Please enter username and password.";
+        return;
+    }
+
     authHeader = "Basic " + btoa(`${username}:${password}`);
     $("loginMessage").textContent = "Checking credentials...";
 
     try {
-        await loadDashboard();
+        const data = await apiRequest("/dashboard");
 
-        const message = $("status").textContent;
+        updateDashboard(data);
 
-        if (message === "Dashboard data loaded successfully.") {
-            $("loginMessage").textContent = "Admin login successful.";
-            $("password").value = "";
-            $("loginPanel").hidden = true;
-            await Promise.all([
-                loadSection("students"),
-                loadSection("notes"),
-                loadSection("announcements")
-            ]);
-        } else {
-            authHeader = null;
-            $("loginMessage").textContent = message;
-        }
+        $("loginMessage").textContent = "Admin login successful.";
+        $("password").value = "";
+        $("loginPanel").hidden = true;
+
+        setStatus("Dashboard data loaded successfully.");
+
+        await Promise.all([
+            loadSection("students"),
+            loadSection("notes"),
+            loadSection("announcements")
+        ]);
+
     } catch (error) {
         authHeader = null;
         $("loginMessage").textContent = error.message;
