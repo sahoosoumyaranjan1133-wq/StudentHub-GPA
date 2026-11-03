@@ -139,7 +139,7 @@ function renderStudents(students) {
             const card = document.createElement("article");
             card.className = "stat";
 
-            // const name = document.createElement("h3");
+            const name = document.createElement("h3");
             name.textContent =
                 student.fullName ?? `Student #${student.studentId}`;
 
