@@ -36,6 +36,9 @@ loginForm.addEventListener("submit", async (event) => {
                 "Invalid email or password."
             );
         }
+        localStorage.setItem("studentToken", data.token);
+
+        window.location.href = "index.html";
 
         message.style.color = "green";
         message.textContent =

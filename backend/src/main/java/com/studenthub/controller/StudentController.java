@@ -39,7 +39,15 @@ public class StudentController {
     throw new ResponseStatusException(
             HttpStatus.BAD_REQUEST,
             "Name, email, and a password of at least 8 characters are required.");
+            if (request == null) {
+    throw new ResponseStatusException(
+            HttpStatus.BAD_REQUEST,
+            "Registration details are required."
+    );
 }
+
+}
+
 
         String email = request.email().trim().toLowerCase();
 
@@ -67,7 +75,7 @@ public class StudentController {
         Student saved = studentRepository.save(student);
 
         return Map.of(
-                "message", "Registration successfully! You can now log in.",
+                "message", "Registration successfull! Please wait for account activation.",
                 "studentId", saved.getStudentId(),
                 "fullName", saved.getFullName(),
                 "email", saved.getEmail(),
