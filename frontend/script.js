@@ -1,3 +1,10 @@
+const API_URL =
+    window.location.hostname === 'localhost' ||
+        window.location.hostname === '127.0.0.1'
+        ? 'http://localhost:8080'
+        : 'https://studenthub-backend-4wyn.onrender.com';
+
+const TOKEN_KEY = 'studentHub_access_token';
 /**
  * ============================================================================
  * 1. DOM HELPERS & MULTI-USER STORAGE
@@ -64,15 +71,37 @@ function saveCurrentUser() {
 
 /**
  * ============================================================================
- * 2. AUTHENTICATION (SIGN UP, LOG IN, LOG OUT)
+ * 2. AUTHENTICATION (SPRING BOOT JWT)
  * ============================================================================
  */
+
 const authScreen = $('#authScreen');
 const appShell = $('#appShell');
 const signupForm = $('#signupForm');
 const loginForm = $('#loginForm');
 const tabSignup = $('#tabSignup');
 const tabLogin = $('#tabLogin');
+
+async function apiRequest(path, options = {}) {
+    const token = localStorage.getItem(TOKEN_KEY);
+
+    const response = await fetch(`${API_URL}${path}`, {
+        ...options,
+        headers: {
+            'Content-Type': 'application/json',
+            ...(token ? { Authorization: `Bearer ${token}` } : {}),
+            ...options.headers
+        }
+    });
+
+    const data = await response.json().catch(() => ({}));
+
+    if (!response.ok) {
+        throw new Error(data.message || data.error || `Request failed (${response.status})`);
+    }
+
+    return data;
+}
 
 tabSignup?.addEventListener('click', () => {
     tabSignup.classList.add('active');
@@ -88,65 +117,90 @@ tabLogin?.addEventListener('click', () => {
     signupForm.classList.add('hidden');
 });
 
-signupForm?.addEventListener('submit', (e) => {
+// Student login through Spring Boot
+loginForm?.addEventListener('submit', async (e) => {
     e.preventDefault();
-    const name = $('#signupName').value.trim();
-    const email = $('#signupEmail').value.trim().toLowerCase();
-    const password = $('#signupPassword').value;
-    const program = $('#signupProgram').value.trim();
-    const errorEl = $('#signupError');
 
-    const users = getUsers();
-    if (users[email]) {
-        errorEl.textContent = 'An account with this email already exists. Please log in.';
-        return;
-    }
-
-    const newUser = createFreshUserData(name, email, password, program);
-    users[email] = newUser;
-    saveUsers(users);
-    localStorage.setItem(SESSION_KEY, email);
-
-    currentUser = newUser;
-    signupForm.reset();
-    errorEl.textContent = '';
-    enterWorkspace(`Welcome to StudentHub, ${currentUser.profile.name}!`);
-});
-
-loginForm?.addEventListener('submit', (e) => {
-    e.preventDefault();
     const email = $('#loginEmail').value.trim().toLowerCase();
     const password = $('#loginPassword').value;
     const errorEl = $('#loginError');
+    const button = loginForm.querySelector('button[type="submit"]');
 
-    const users = getUsers();
-    const user = users[email];
-
-    if (!user || user.profile.password !== password) {
-        errorEl.textContent = 'Invalid email or password. Please try again.';
-        return;
-    }
-
-    localStorage.setItem(SESSION_KEY, email);
-    currentUser = user;
-    loginForm.reset();
     errorEl.textContent = '';
-    enterWorkspace(`Welcome back, ${currentUser.profile.name}!`);
+    button.disabled = true;
+    button.textContent = 'Signing in...';
+
+    try {
+        localStorage.removeItem(TOKEN_KEY);
+
+        const data = await apiRequest('/api/students/login', {
+            method: 'POST',
+            body: JSON.stringify({ email, password })
+        });
+
+        if (!data.token) {
+            throw new Error('The server did not return an authentication token.');
+        }
+
+        localStorage.setItem(TOKEN_KEY, data.token);
+
+        const profile = await apiRequest('/api/students/me');
+
+        const users = getUsers();
+        currentUser = users[email] || createFreshUserData(
+            profile.fullName,
+            profile.email,
+            '',
+            profile.department || 'General Studies'
+        );
+
+        currentUser.profile.name = profile.fullName;
+        currentUser.profile.email = profile.email.toLowerCase();
+        currentUser.profile.program = profile.department || 'General Studies';
+
+        localStorage.setItem(SESSION_KEY, email);
+        saveCurrentUser();
+
+        loginForm.reset();
+
+        enterWorkspace(`Welcome back, ${profile.fullName}!`);
+
+    } catch (error) {
+        localStorage.removeItem(TOKEN_KEY);
+        errorEl.textContent = error.message;
+    } finally {
+        button.disabled = false;
+        button.textContent = 'Log In';
+    }
+});
+
+// Signup will be connected to the backend separately
+signupForm?.addEventListener('submit', (e) => {
+    e.preventDefault();
+    $('#signupError').textContent =
+        'Registration is not connected yet. Please use an approved student account.';
 });
 
 function logoutUser() {
+    localStorage.removeItem(TOKEN_KEY);
     localStorage.removeItem(SESSION_KEY);
+
     currentUser = null;
+
     if ($('#modal')?.open) $('#modal').close();
+
     appShell.classList.add('hidden');
     authScreen.classList.remove('hidden');
+
     toast('Logged out safely');
 }
 
 function enterWorkspace(welcomeToast) {
     authScreen.classList.add('hidden');
     appShell.classList.remove('hidden');
+
     refreshEntireDashboard();
+
     if (welcomeToast) toast(welcomeToast);
 }
 
@@ -920,14 +974,42 @@ document.addEventListener('keydown', (e) => {
  * 7. INITIALIZE SESSION ON PAGE LOAD
  * ============================================================================
  */
-(function initSession() {
+(async function initSession() {
     const savedEmail = getCurrentEmail();
-    const users = getUsers();
-    if (savedEmail && users[savedEmail]) {
-        currentUser = users[savedEmail];
+    const token = localStorage.getItem(TOKEN_KEY);
+
+    if (!savedEmail || !token) {
+        logoutUser();
+        return;
+    }
+
+    try {
+        const profile = await apiRequest('/api/students/me');
+
+        const users = getUsers();
+
+        currentUser = users[savedEmail] || createFreshUserData(
+            profile.fullName,
+            profile.email,
+            '',
+            profile.department || 'General Studies'
+        );
+
+        currentUser.profile.name = profile.fullName;
+        currentUser.profile.email = profile.email.toLowerCase();
+        currentUser.profile.program = profile.department || 'General Studies';
+
+        saveCurrentUser();
         enterWorkspace();
-    } else {
+
+    } catch (error) {
+        localStorage.removeItem(TOKEN_KEY);
+        localStorage.removeItem(SESSION_KEY);
+
+        currentUser = null;
         authScreen.classList.remove('hidden');
         appShell.classList.add('hidden');
+
+        console.error('Session verification failed:', error);
     }
 })();

@@ -62,7 +62,7 @@ public class StudentController {
 
         // Public registration cannot assign privileged roles.
         student.setRole(Student.Role.STUDENT);
-        student.setAccountStatus(Student.AccountStatus.ACTIVE);
+        student.setAccountStatus(Student.AccountStatus.INACTIVE);
 
         Student saved = studentRepository.save(student);
 

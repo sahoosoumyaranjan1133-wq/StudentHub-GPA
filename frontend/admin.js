@@ -99,6 +99,7 @@ async function loadSection(section) {
         const data = await apiRequest(routes[section]);
 
         if (section === "students") {
+            console.log("Student API Response:", data);
             renderStudents(data);
         } else {
             showJson(outputIds[section], data);

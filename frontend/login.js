@@ -1,5 +1,5 @@
-// const API_URL =
-"https://studenthub-backend-4wyn.onrender.com";
+const API_URL =
+    "https://studenthub-backend-4wyn.onrender.com";
 
 const loginForm = document.getElementById("loginForm");
 const message = document.getElementById("message");

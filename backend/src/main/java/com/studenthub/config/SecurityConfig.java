@@ -21,10 +21,12 @@ import org.springframework.security.crypto.password.NoOpPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.provisioning.InMemoryUserDetailsManager;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
+import com.studenthub.security.JwtAuthenticationFilter;
 import com.studenthub.security.StudentUserDetailsService;
 
 @Configuration
@@ -32,188 +34,114 @@ import com.studenthub.security.StudentUserDetailsService;
 @SuppressWarnings("deprecation")
 public class SecurityConfig {
 
-    @Value("${app.cors.allowed-origin:http://127.0.0.1:5500}")
-    private String allowedOrigin;
-
-    // Admin authentication
-    // @Bean("adminAuthenticationManager")
-    // @Primary
-    // AuthenticationManager adminAuthenticationManager(
-    //         @Value("${app.admin.username}") String username,
-    //         @Value("${app.admin.password}") String password) {
-
-    //     UserDetails admin = User.withUsername(username)
-    //             .password("{noop}" + password)
-    //             .roles("ADMIN")
-    //             .build();
-
-    //     UserDetailsService adminUserDetailsService =
-    //             new InMemoryUserDetailsManager(admin);
-
-    //     DaoAuthenticationProvider provider =
-    //             new DaoAuthenticationProvider(adminUserDetailsService);
-
-    //     provider.setPasswordEncoder(
-    //             NoOpPasswordEncoder.getInstance());
-
-    //     return new ProviderManager(provider);
-    // }
     @Bean("adminAuthenticationManager")
-@Primary
-AuthenticationManager adminAuthenticationManager(
-        @Value("${app.admin.username}") String username,
-        @Value("${app.admin.password}") String password) {
+    @Primary
+    AuthenticationManager adminAuthenticationManager(
+            @Value("${app.admin.username}") String username,
+            @Value("${app.admin.password}") String password) {
 
-    UserDetails admin = User.withUsername(username)
-            .password(password)
-            .roles("ADMIN")
-            .build();
+        UserDetails admin = User.withUsername(username)
+                .password(password)
+                .roles("ADMIN")
+                .build();
 
-    UserDetailsService adminUserDetailsService =
-            new InMemoryUserDetailsManager(admin);
+        UserDetailsService service =
+                new InMemoryUserDetailsManager(admin);
 
-    DaoAuthenticationProvider provider =
-            new DaoAuthenticationProvider();
+        DaoAuthenticationProvider provider =
+                new DaoAuthenticationProvider();
 
-    provider.setUserDetailsService(adminUserDetailsService);
-    provider.setPasswordEncoder(NoOpPasswordEncoder.getInstance());
+        provider.setUserDetailsService(service);
+        provider.setPasswordEncoder(NoOpPasswordEncoder.getInstance());
 
-    return new ProviderManager(provider);
-}
+        return new ProviderManager(provider);
+    }
 
-    // Security rules for HTTP requests
-//     @Bean
-//     SecurityFilterChain securityFilterChain(
-//             HttpSecurity http,
-//             @Qualifier("adminAuthenticationManager")
-//             AuthenticationManager adminAuthenticationManager)
-//             throws Exception {
-
-//         http
-//             // .authenticationManager(adminAuthenticationManager)
-//             // .cors(Customizer.withDefaults())
-//             // .csrf(csrf -> csrf.disable())
-//             // .authorizeHttpRequests(auth -> auth
-//             //     .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
-//             //     .requestMatchers(
-//             //         HttpMethod.POST,
-//             //         "/api/students/register",
-//             //         "/api/students/login"
-//             //     ).permitAll()
-//             //     .anyRequest().hasRole("ADMIN")
-//             // )
-//             .authorizeHttpRequests(auth -> auth
-//     .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
-
-//     // Public health check
-//     .requestMatchers("/actuator/health").permitAll()
-
-//     // Public student registration and login
-//     .requestMatchers(
-//         HttpMethod.POST,
-//         "/api/students/register",
-//         "/api/students/login"
-//     ).permitAll()
-
-//     // All remaining endpoints require ADMIN
-//     .anyRequest().hasRole("ADMIN")
-// )
-//             .httpBasic(Customizer.withDefaults());
-
-//         return http.build();
-//     }
-@Bean
-SecurityFilterChain securityFilterChain(
-        HttpSecurity http,
-        @Qualifier("adminAuthenticationManager")
-        AuthenticationManager adminAuthenticationManager)
-        throws Exception {
-
-    http
-        .authenticationManager(adminAuthenticationManager)
-        .cors(Customizer.withDefaults())
-        .csrf(csrf -> csrf.disable())
-
-        .authorizeHttpRequests(auth -> auth
-
-            .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
-
-            .requestMatchers("/actuator/health").permitAll()
-
-            // Public student registration and login
-            .requestMatchers(
-                HttpMethod.POST,
-                "/api/students/register",
-                "/api/students/login"
-            ).permitAll()
-
-            // Only admin APIs require ADMIN credentials
-            .requestMatchers("/api/admin/**").hasRole("ADMIN")
-
-            // Other endpoints are not protected by this filter chain
-            .anyRequest().permitAll()
-        )
-
-        .httpBasic(Customizer.withDefaults());
-
-    return http.build();
-}
-
-    // Student authentication
-    // @Bean("studentAuthenticationManager")
-    // AuthenticationManager studentAuthenticationManager(
-    //         StudentUserDetailsService studentUserDetailsService,
-    //         PasswordEncoder passwordEncoder) {
-
-    //     DaoAuthenticationProvider provider =
-    //             new DaoAuthenticationProvider(studentUserDetailsService);
-
-    //     provider.setPasswordEncoder(passwordEncoder);
-
-    //     return new ProviderManager(provider);
-    // }
     @Bean("studentAuthenticationManager")
-AuthenticationManager studentAuthenticationManager(
-        StudentUserDetailsService studentUserDetailsService,
-        PasswordEncoder passwordEncoder) {
+    AuthenticationManager studentAuthenticationManager(
+            StudentUserDetailsService studentUserDetailsService,
+            PasswordEncoder passwordEncoder) {
 
-    DaoAuthenticationProvider provider =
-            new DaoAuthenticationProvider(passwordEncoder);
+        DaoAuthenticationProvider provider =
+                new DaoAuthenticationProvider(passwordEncoder);
 
-    provider.setUserDetailsService(studentUserDetailsService);
+        provider.setUserDetailsService(studentUserDetailsService);
 
-    return new ProviderManager(provider);
+        return new ProviderManager(provider);
+    }
+
+    @Bean
+    SecurityFilterChain securityFilterChain(
+            HttpSecurity http,
+            @Qualifier("adminAuthenticationManager")
+            AuthenticationManager adminAuthenticationManager,
+            JwtAuthenticationFilter jwtAuthenticationFilter)
+            throws Exception {
+
+        http
+            .authenticationManager(adminAuthenticationManager)
+            .cors(Customizer.withDefaults())
+            .csrf(csrf -> csrf.disable())
+
+            .authorizeHttpRequests(auth -> auth
+
+                .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
+
+                .requestMatchers("/actuator/health").permitAll()
+
+                // Public student registration and login
+                .requestMatchers(
+                    HttpMethod.POST,
+                    "/api/students/register",
+                    "/api/students/login"
+                ).permitAll()
+
+                // Student APIs require authentication
+                .requestMatchers("/api/students/**").hasRole("STUDENT")
+
+                // Admin APIs require ADMIN credentials
+                .requestMatchers("/api/admin/**").hasRole("ADMIN")
+
+                .anyRequest().permitAll()
+            )
+
+            .httpBasic(Customizer.withDefaults())
+
+            .addFilterBefore(
+                jwtAuthenticationFilter,
+                UsernamePasswordAuthenticationFilter.class
+            );
+
+        return http.build();
+    }
+
+    @Bean
+    CorsConfigurationSource corsConfigurationSource() {
+
+        CorsConfiguration config = new CorsConfiguration();
+
+        config.setAllowedOriginPatterns(List.of(
+            "https://studenthub-gpa.pages.dev",
+            "https://*.studenthub-gpa.pages.dev",
+            "http://localhost:5500",
+            "http://127.0.0.1:5500"
+        ));
+
+        config.setAllowedMethods(List.of(
+            "GET", "POST", "PUT", "PATCH",
+            "DELETE", "OPTIONS"
+        ));
+
+        config.setAllowedHeaders(List.of(
+            "Authorization",
+            "Content-Type"
+        ));
+
+        UrlBasedCorsConfigurationSource source =
+                new UrlBasedCorsConfigurationSource();
+
+        source.registerCorsConfiguration("/**", config);
+
+        return source;
+    }
 }
-
-    // CORS configuration for the frontend
-@Bean
-CorsConfigurationSource corsConfigurationSource() {
-
-    CorsConfiguration config = new CorsConfiguration();
-
-    config.setAllowedOriginPatterns(List.of(
-        "https://studenthub-gpa.pages.dev",
-        "https://*.studenthub-gpa.pages.dev",
-        "http://localhost:5500",
-        "http://127.0.0.1:5500"
-    ));
-
-    config.setAllowedMethods(List.of(
-        "GET", "POST", "PUT", "PATCH",
-        "DELETE", "OPTIONS"
-    ));
-
-    config.setAllowedHeaders(List.of(
-        "Authorization",
-        "Content-Type"
-    ));
-
-    UrlBasedCorsConfigurationSource source =
-            new UrlBasedCorsConfigurationSource();
-
-    source.registerCorsConfiguration("/**", config);
-
-    return source;
-}
-}
-
