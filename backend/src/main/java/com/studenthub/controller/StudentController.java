@@ -17,7 +17,10 @@ public class StudentController {
     private final StudentRepository studentRepository;
     private final PasswordEncoder passwordEncoder;
 
-    public StudentController(StudentRepository studentRepository, PasswordEncoder passwordEncoder) {
+    public StudentController(
+            StudentRepository studentRepository,
+            PasswordEncoder passwordEncoder) {
+
         this.studentRepository = studentRepository;
         this.passwordEncoder = passwordEncoder;
     }
@@ -27,55 +30,66 @@ public class StudentController {
     public Map<String, Object> register(
             @RequestBody RegistrationRequest request) {
 
-        // if (request.fullName() == null || request.fullName().isBlank()
-        //         || request.email() == null || request.email().isBlank()) {
-        //     throw new ResponseStatusException(
-        //             HttpStatus.BAD_REQUEST,
-        //             "Full name and email are required.");
-        // }
+        // Validate request body first
+        if (request == null) {
+            throw new ResponseStatusException(
+                    HttpStatus.BAD_REQUEST,
+                    "Registration details are required."
+            );
+        }
+
+        // Validate required fields
         if (request.fullName() == null || request.fullName().isBlank()
-        || request.email() == null || request.email().isBlank()
-        || request.password() == null || request.password().length() < 8) {
-    throw new ResponseStatusException(
-            HttpStatus.BAD_REQUEST,
-            "Name, email, and a password of at least 8 characters are required.");
-            if (request == null) {
-    throw new ResponseStatusException(
-            HttpStatus.BAD_REQUEST,
-            "Registration details are required."
-    );
-}
+                || request.email() == null || request.email().isBlank()
+                || request.password() == null
+                || request.password().length() < 8) {
 
-}
-
+            throw new ResponseStatusException(
+                    HttpStatus.BAD_REQUEST,
+                    "Name, email, and a password of at least 8 characters are required."
+            );
+        }
 
         String email = request.email().trim().toLowerCase();
 
+        // Validate email format
         if (!email.matches("^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$")) {
             throw new ResponseStatusException(
-                    HttpStatus.BAD_REQUEST, "Enter a valid email address.");
+                    HttpStatus.BAD_REQUEST,
+                    "Enter a valid email address."
+            );
         }
 
+        // Check duplicate email
         if (studentRepository.existsByEmailIgnoreCase(email)) {
             throw new ResponseStatusException(
-                    HttpStatus.CONFLICT, "This email is already registered.");
+                    HttpStatus.CONFLICT,
+                    "This email is already registered."
+            );
         }
 
+        // Create student
         Student student = new Student();
+
         student.setFullName(request.fullName().trim());
-        student.setPasswordHash(passwordEncoder.encode(request.password()));
         student.setEmail(email);
+        student.setPasswordHash(
+                passwordEncoder.encode(request.password())
+        );
+
         student.setDepartment(request.department());
         student.setSemester(request.semester());
 
-        // Public registration cannot assign privileged roles.
+        // Public registration: STUDENT role only
         student.setRole(Student.Role.STUDENT);
+
+        // Admin approval required before login
         student.setAccountStatus(Student.AccountStatus.INACTIVE);
 
         Student saved = studentRepository.save(student);
 
         return Map.of(
-                "message", "Registration successfull! Please wait for account activation.",
+                "message", "Registration successful! Please wait for account activation.",
                 "studentId", saved.getStudentId(),
                 "fullName", saved.getFullName(),
                 "email", saved.getEmail(),
