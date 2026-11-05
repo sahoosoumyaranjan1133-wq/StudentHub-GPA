@@ -1,5 +1,5 @@
 const API_URL =
-    "https://studenthub-backend-4wyn.onrender.com";
+    "https://studenthub-backend-4wyn.onrender.com/api/students/login";
 
 const loginForm = document.getElementById("loginForm");
 const message = document.getElementById("message");
@@ -16,19 +16,16 @@ loginForm.addEventListener("submit", async (event) => {
     const password = document.getElementById("password").value;
 
     try {
-        const response = await fetch(
-            `${API_URL}/api/students/login`,
-            {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json"
-                },
-                body: JSON.stringify({
-                    email: email,
-                    password: password
-                })
-            }
-        );
+        const response = await fetch(API_URL, {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({
+                email: email,
+                password: password
+            })
+        });
 
         const data = await response.json();
 
@@ -44,12 +41,13 @@ loginForm.addEventListener("submit", async (event) => {
         message.textContent =
             data.message || "Login successful!";
 
-        // Dashboard navigation will be added
-        // after confirming your login response structure.
+        console.log("Login response:", data);
 
     } catch (error) {
         message.style.color = "red";
         message.textContent = error.message;
+        console.error("Login error:", error);
+
     } finally {
         loginButton.disabled = false;
         loginButton.textContent = "Log In";
