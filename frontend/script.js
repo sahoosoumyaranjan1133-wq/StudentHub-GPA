@@ -36,27 +36,47 @@ function getCurrentEmail() {
     return localStorage.getItem(SESSION_KEY);
 }
 
-function createFreshUserData(name, email, password, program) {
+function createFreshUserData(name, email, program) {
     return {
         profile: {
             name: name.trim(),
             email: email.trim().toLowerCase(),
-            password,
             program: program.trim() || 'General Studies',
             focus: 'Building consistency'
         },
         studyHours: 0,
         quizScores: [],
         tasks: [
-            { id: Date.now() + 1, name: 'Add your subjects in Attendance Tracker', time: '2 min', done: false, tag: 'First Step' },
-            { id: Date.now() + 2, name: 'Save your first study note in Notes Library', time: '5 min', done: false, tag: 'First Step' }
+            {
+                id: Date.now() + 1,
+                name: 'Add your subjects in Attendance Tracker',
+                time: '2 min',
+                done: false,
+                tag: 'First Step'
+            },
+            {
+                id: Date.now() + 2,
+                name: 'Save your first study note in Notes Library',
+                time: '5 min',
+                done: false,
+                tag: 'First Step'
+            }
         ],
         notes: [],
         assignments: [],
         attendance: [],
         posts: [],
-        resume: { name: name.trim(), skills: '', project: '' },
-        widgets: { attendance: true, studyTime: true, tasks: true, quiz: true }
+        resume: {
+            name: name.trim(),
+            skills: '',
+            project: ''
+        },
+        widgets: {
+            attendance: true,
+            studyTime: true,
+            tasks: true,
+            quiz: true
+        }
     };
 }
 
@@ -64,8 +84,23 @@ let currentUser = null;
 
 function saveCurrentUser() {
     if (!currentUser) return;
+
     const users = getUsers();
+
+    // Remove legacy password properties from existing local profiles.
+    Object.values(users).forEach(user => {
+        if (user?.profile) {
+            delete user.profile.password;
+        }
+    });
+
+    // Never save a password in the current profile.
+    if (currentUser.profile) {
+        delete currentUser.profile.password;
+    }
+
     users[currentUser.profile.email] = currentUser;
+
     saveUsers(users);
 }
 
@@ -150,7 +185,6 @@ loginForm?.addEventListener('submit', async (e) => {
         currentUser = users[email] || createFreshUserData(
             profile.fullName,
             profile.email,
-            '',
             profile.department || 'General Studies'
         );
 
