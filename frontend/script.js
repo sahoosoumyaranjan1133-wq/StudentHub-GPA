@@ -161,6 +161,7 @@ loginForm?.addEventListener('submit', async (e) => {
     const errorEl = $('#loginError');
     const button = loginForm.querySelector('button[type="submit"]');
 
+    errorEl.style.color = '';
     errorEl.textContent = '';
     button.disabled = true;
     button.textContent = 'Signing in...';
@@ -208,12 +209,57 @@ loginForm?.addEventListener('submit', async (e) => {
     }
 });
 
-// Signup will be connected to the backend separately
-// signupForm?.addEventListener('submit', (e) => {
-//     e.preventDefault();
-//     $('#signupError').textContent =
-//         'Registration is not connected yet. Please use an approved student account.';
-// });
+// Student registration through Spring Boot
+signupForm?.addEventListener('submit', async (e) => {
+    e.preventDefault();
+
+    const errorEl = $('#signupError');
+    const button = signupForm.querySelector('button[type="submit"]');
+    const password = $('#signupPassword').value;
+
+    errorEl.style.color = '';
+    errorEl.textContent = '';
+
+    if (password.length < 8) {
+        errorEl.textContent = 'Password must contain at least 8 characters.';
+        return;
+    }
+
+    button.disabled = true;
+    button.textContent = 'Creating account...';
+
+    try {
+        const data = await apiRequest('/api/students/register', {
+            method: 'POST',
+            body: JSON.stringify({
+                fullName: $('#signupName').value.trim(),
+                email: $('#signupEmail').value.trim(),
+                department: $('#signupProgram').value.trim(),
+                semester: Number($('#signupSemester').value) || null,
+                password
+            })
+        });
+
+        const email = $('#signupEmail').value.trim();
+        signupForm.reset();
+
+        // Switch to the Log In tab and tell the user what happens next
+        tabLogin?.click();
+        $('#loginEmail').value = email;
+        const loginError = $('#loginError');
+        loginError.style.color = '#16a34a';
+        loginError.textContent =
+            (data.message || 'Registration successful!') +
+            ' You can log in after an admin approves your account.';
+    } catch (error) {
+        errorEl.textContent = error instanceof TypeError
+            ? 'Cannot connect to the server. It may be waking up - try again in a minute.'
+            : error.message;
+    } finally {
+        button.disabled = false;
+        button.textContent = 'Create Account';
+    }
+});
 
 function logoutUser() {
     localStorage.removeItem(TOKEN_KEY);
@@ -1025,7 +1071,6 @@ document.addEventListener('keydown', (e) => {
         currentUser = users[savedEmail] || createFreshUserData(
             profile.fullName,
             profile.email,
-            '',
             profile.department || 'General Studies'
         );
 

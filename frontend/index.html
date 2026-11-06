@@ -142,15 +142,18 @@
                     <input id="signupEmail" type="email" required placeholder="you@example.com" />
 
                     <label for="signupPassword">Password</label>
-                    <input id="signupPassword" type="password" required minlength="4"
-                        placeholder="At least 4 characters" />
+                    <input id="signupPassword" type="password" required minlength="8"
+                        placeholder="At least 8 characters" />
 
                     <label for="signupProgram">Course / Program</label>
                     <input id="signupProgram" type="text" required placeholder="e.g. B.Tech CSE, Diploma, BCA" />
 
+                    <label for="signupSemester">Semester</label>
+                    <input id="signupSemester" type="number" min="1" max="12" required placeholder="e.g. 3" />
+
                     <div class="auth-error" id="signupError"></div>
-                    <button type="submit" class="modal-submit" style="width:100%; margin-top:10px;">Create Account &amp;
-                        Enter →</button>
+                    <button type="submit" class="modal-submit" style="width:100%; margin-top:10px;">Create
+                        Account</button>
                 </form>
 
                 <!-- Login Form -->
