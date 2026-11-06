@@ -175,11 +175,11 @@ loginForm?.addEventListener('submit', async (e) => {
 });
 
 // Signup will be connected to the backend separately
-signupForm?.addEventListener('submit', (e) => {
-    e.preventDefault();
-    $('#signupError').textContent =
-        'Registration is not connected yet. Please use an approved student account.';
-});
+// signupForm?.addEventListener('submit', (e) => {
+//     e.preventDefault();
+//     $('#signupError').textContent =
+//         'Registration is not connected yet. Please use an approved student account.';
+// });
 
 function logoutUser() {
     localStorage.removeItem(TOKEN_KEY);
