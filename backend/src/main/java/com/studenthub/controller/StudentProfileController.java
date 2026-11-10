@@ -2,7 +2,7 @@ package com.studenthub.controller;
 
 import java.util.Map;
 
-import java.util.list;
+import java.util.List;
 
 import com.studenthub.repository.StudentRepository;
 
