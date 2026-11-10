@@ -361,7 +361,7 @@ $("announcementForm").addEventListener("submit", async (event) => {
     try {
         const result = await apiRequest("/announcements", {
             method: "POST",
-            body: JSON.stringify({ title, content })
+            body: JSON.stringify({ title, message: content, targetAudience: "ALL" })
         });
 
         $("announcementForm").reset();
