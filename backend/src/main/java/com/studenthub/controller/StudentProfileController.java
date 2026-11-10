@@ -2,6 +2,11 @@ package com.studenthub.controller;
 
 import java.util.Map;
 
+import java.util.list;
+
+import com.studenthub.repository.StudentRepository;
+
+
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AnonymousAuthenticationToken;
@@ -21,9 +26,27 @@ public class StudentProfileController {
 
     private final StudentRepository studentRepository;
 
+    private final AnnouncementRepository announcementRepository;
+
     public StudentProfileController(
-            StudentRepository studentRepository) {
+            StudentRepository studentRepository,
+            AnnouncementRepository announcementRepository) {
         this.studentRepository = studentRepository;
+        this.announcementRepository = announcementRepository;
+    }
+
+    @GetMapping("/announcements")
+    public List<Map<String, Object>> getAnnouncements() {
+        return announcementRepository
+                .findByPublishedTrueAndTargetAudienceInOrderByCreatedAtDesc(
+                        List.of("ALL", "STUDENT", "STUDENTS"))
+                .stream()
+                .map(a -> Map.<String, Object>of(
+                        "id", a.getAnnouncementId(),
+                        "title", a.getTitle() == null ? "" : a.getTitle(),
+                        "message", a.getMessage() == null ? "" : a.getMessage(),
+                        "createdAt", a.getCreatedAt() == null ? "" : a.getCreatedAt().toString()))
+                .toList();
     }
 
     @GetMapping("/me")

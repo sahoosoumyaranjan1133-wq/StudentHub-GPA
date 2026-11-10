@@ -322,7 +322,8 @@ function updateHeaderView(view) {
         assignments: ['Assignments', 'Keep upcoming submission deadlines under control.'],
         placement: ['Placement Preparation', 'Practice technical and aptitude questions interactively.'],
         resume: ['Resume Builder', 'Generate a clean resume summary from your skills and projects.'],
-        community: ['Student Community', 'Share study tips, questions, and project updates.']
+        community: ['Student Community', 'Share study tips, questions, and project updates.'],
+        announcements: ['Announcements', 'Latest notices from your college admin.']
     };
     const [title, sub] = titles[view] || titles.overview;
     $('#breadcrumbTitle').textContent = view === 'overview' ? 'Overview' : title;
@@ -555,6 +556,28 @@ function openFeature(view) {
         case 'community':
             renderCommunityModal();
             break;
+
+        case 'announcements':
+            renderAnnouncementsModal();
+            break;
+    }
+}
+
+async function renderAnnouncementsModal() {
+    showModal('Announcements', '<p>Loading announcements...</p>');
+    try {
+        const list = await apiRequest('/api/students/announcements');
+        const html = Array.isArray(list) && list.length
+            ? list.map((a) => {
+                const d = a.createdAt ? new Date(a.createdAt).toLocaleString() : '';
+                return `<div style="padding:10px 0;border-bottom:1px solid #eee;">
+                  <b>📢 ${escapeHTML(a.title)}</b> <small style="opacity:0.65;">${escapeHTML(d)}</small><br/>
+                  <span>${escapeHTML(a.message)}</span></div>`;
+            }).join('')
+            : '<em>No announcements yet.</em>';
+        showModal('Announcements', `<div class="answer-box" style="max-height:320px;overflow-y:auto;">${html}</div>`);
+    } catch (err) {
+        showModal('Announcements', `<p style="color:#d9534f;">Could not load announcements: ${escapeHTML(err.message || 'error')}</p>`);
     }
 }
 
